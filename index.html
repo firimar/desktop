@@ -8,8 +8,11 @@
         content="width=device-width, initial-scale=1.0"
     >
     <title>iframe</title>
-    <script src="js/messenger.js"></script>
-
+    <style>
+        body{
+          background: #ffffff;
+      }
+  </style>
 </head>
 
 <body>
@@ -21,21 +24,17 @@
         </p>
 
         <p>
-            <input
-                type="text"
-                placeholder="输入消息"
-                id="message"
-            />
+
             <button
                 type="button"
                 class="btn btn-primary"
-                onclick="sendMessage('parent');"
-            >send to parent</button>
+                onclick="OPEN.spot();"
+            >spot</button>
             <button
                 type="button"
                 class="btn btn-success"
-                onclick="sendAll();"
-            >send to all</button>
+                onclick="OPEN.goToPay();"
+            >goToPay</button>
         </p>
         <pre
             id="output"
@@ -45,28 +44,36 @@
     </div>
 
     <script>
-        var messenger = new Messenger('iframe', 'Facebook'),
-            input = document.getElementById('message');
-
-        messenger.listen(function (msg) {
-            console.log(msg);
-            var newline = '\n';
-            var text = document.createTextNode(msg + newline);
-            document.getElementById('output').appendChild(text);
-        });
-
-        messenger.addTarget(window.parent, 'parent');
-
-        function sendMessage(name) {
-            var msg = input.value;
-            messenger.targets[name].send("message from iframe: " + msg);
-            input.value = '';
-        }
-
-        function sendAll() {
-            var msg = input.value;
-            messenger.send("message from iframe: " + msg);
-            input.value = '';
+        var OPEN = {
+            goToPay: function (appId, productId, productName, price, extra, sign) {
+                var data = { action: 'pay_redirect', appId: appId, productId: productId, productName: productName, price: price, extra: extra, sign: sign }
+                window.parent.postMessage(data, '*');
+            },
+            isPc: function () {
+                if (OPEN.isAndroid() == false && OPEN.isiOS() == false && OPEN.isWeixin() == false) {
+                    return false
+                } else {
+                    return false
+                }
+            },
+            isAndroid: function () {
+                return navigator.userAgent.indexOf("Android") > -1 || navigator.userAgent.indexOf("Linux") > -1
+            },
+            isiOS: function () {
+                return !!navigator.userAgent.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/)
+            },
+            isWeixin: function () {
+                return "micromessenger" == navigator.userAgent.toLowerCase().match(/MicroMessenger/i)
+            },
+            getURLVar: function (a) {
+                var b = new RegExp("(^|&)" + a + "=([^&]*)(&|$)", "i"),
+                    c = window.location.search.substr(1).match(b);
+                return null != c ? unescape(c[2]) : null
+            },
+            spot: function (appId, spotType, extra, sign) {
+                var data = { action: 'spot', appId: appId, spotType: spotType, extra: extra, sign: sign }
+                window.parent.postMessage(data, '*');
+            }
         }
     </script>
 </body>
